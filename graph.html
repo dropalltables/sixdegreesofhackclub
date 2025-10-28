@@ -137,6 +137,12 @@
             pointer-events: none;
             text-anchor: middle;
             dominant-baseline: middle;
+            display: none; /* Hide by default for performance */
+        }
+
+        .node.highlighted text,
+        .node:hover text {
+            display: block;
         }
 
         #tooltip {
@@ -199,13 +205,20 @@
             <input type="text" id="toChannel" list="channels" placeholder="e.g. ship">
         </div>
 
+        <div class="input-group">
+            <label for="minConnections">Min Connections (filter)</label>
+            <input type="number" id="minConnections" value="1" min="1" max="100">
+        </div>
+
         <button id="findPath">Find Path</button>
         <button id="clearPath">Clear Path</button>
+        <button id="applyFilter">Apply Filter</button>
 
         <div id="stats">
             <div><strong>Stats:</strong></div>
             <div id="nodeCount">Nodes: 0</div>
             <div id="linkCount">Links: 0</div>
+            <div id="displayedNodes">Displayed: 0</div>
         </div>
     </div>
 
@@ -214,9 +227,11 @@
 
     <script>
         let graphData = { nodes: [], links: [] };
+        let fullGraphData = { nodes: [], links: [] }; // Store full data
         let simulation;
         let svg, g, link, node;
         let channelMap = new Map();
+        let minConnectionsFilter = 1;
 
         // Load data
         async function loadData() {
@@ -267,12 +282,15 @@
                     nodes.get(conn.to).connections++;
                 }
 
-                graphData.nodes = Array.from(nodes.values());
-                graphData.links = links;
+                fullGraphData.nodes = Array.from(nodes.values());
+                fullGraphData.links = links;
+
+                // Start with filtered data (top connected channels)
+                applyConnectionFilter(5); // Default to channels with 5+ connections
 
                 // Populate channel list
                 const datalist = document.getElementById('channels');
-                graphData.nodes
+                fullGraphData.nodes
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .forEach(node => {
                         const option = document.createElement('option');
@@ -281,8 +299,10 @@
                     });
 
                 // Update stats
-                document.getElementById('nodeCount').textContent = `Nodes: ${graphData.nodes.length}`;
-                document.getElementById('linkCount').textContent = `Links: ${graphData.links.length}`;
+                document.getElementById('nodeCount').textContent = `Total Nodes: ${fullGraphData.nodes.length}`;
+                document.getElementById('linkCount').textContent = `Total Links: ${fullGraphData.links.length}`;
+                document.getElementById('displayedNodes').textContent = `Displayed: ${graphData.nodes.length}`;
+                document.getElementById('minConnections').value = 5;
 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('controls').style.display = 'block';
@@ -291,6 +311,25 @@
             } catch (error) {
                 document.getElementById('loading').textContent = `Error loading data: ${error.message}`;
             }
+        }
+
+        function applyConnectionFilter(minConnections) {
+            minConnectionsFilter = minConnections;
+
+            // Filter nodes
+            const filteredNodes = fullGraphData.nodes.filter(n => n.connections >= minConnections);
+            const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+
+            // Filter links to only include those between filtered nodes
+            const filteredLinks = fullGraphData.links.filter(l =>
+                filteredNodeIds.has(l.source.id || l.source) &&
+                filteredNodeIds.has(l.target.id || l.target)
+            );
+
+            graphData.nodes = filteredNodes;
+            graphData.links = filteredLinks;
+
+            document.getElementById('displayedNodes').textContent = `Displayed: ${graphData.nodes.length}`;
         }
 
         function initGraph() {
@@ -312,12 +351,14 @@
 
             svg.call(zoom);
 
-            // Create simulation
+            // Create simulation with performance optimizations
             simulation = d3.forceSimulation(graphData.nodes)
-                .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(100))
-                .force('charge', d3.forceManyBody().strength(-300))
+                .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(50))
+                .force('charge', d3.forceManyBody().strength(-200))
                 .force('center', d3.forceCenter(width / 2, height / 2))
-                .force('collision', d3.forceCollide().radius(20));
+                .force('collision', d3.forceCollide().radius(15))
+                .alphaDecay(0.05) // Faster stabilization
+                .velocityDecay(0.4); // More damping
 
             // Create links
             link = g.append('g')
@@ -504,6 +545,24 @@
             node.style('opacity', 1);
             link.style('opacity', 1);
         }
+
+        // Apply filter button
+        document.getElementById('applyFilter').addEventListener('click', () => {
+            const minConn = parseInt(document.getElementById('minConnections').value);
+            if (isNaN(minConn) || minConn < 1) {
+                alert('Please enter a valid minimum connections value');
+                return;
+            }
+
+            applyConnectionFilter(minConn);
+
+            // Restart graph with filtered data
+            if (simulation) {
+                simulation.stop();
+            }
+            svg.selectAll('*').remove();
+            initGraph();
+        });
 
         // Load data on page load
         loadData();
