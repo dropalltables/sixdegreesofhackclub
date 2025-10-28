@@ -1,0 +1,8 @@
+node_modules/
+.env
+channel-links.jsonl
+channel-metadata.json
+checkpoint.json
+channels-cache.json
+*.log
+.DS_Store

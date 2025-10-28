@@ -1,0 +1,24 @@
+display_information:
+  name: Six Degrees Mapper
+  description: Maps channel connections across the Hack Club workspace
+  background_color: "#ec3750"
+features:
+  bot_user:
+    display_name: Six Degrees Mapper
+    always_online: true
+oauth_config:
+  scopes:
+    bot:
+      - channels:history
+      - channels:read
+      - channels:join
+      - groups:history
+      - groups:read
+settings:
+  event_subscriptions:
+    bot_events: []
+  interactivity:
+    is_enabled: false
+  org_deploy_enabled: false
+  socket_mode_enabled: true
+  token_rotation_enabled: false

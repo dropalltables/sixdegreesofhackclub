@@ -1,0 +1,22 @@
+{
+  "name": "sixdegreesofhackclub",
+  "version": "1.0.0",
+  "description": "A Slack bot that maps channel connections in the Hack Club workspace",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "cli": "node cli.js"
+  },
+  "bin": {
+    "sixdegrees": "./cli.js"
+  },
+  "keywords": ["slack", "bot", "websocket", "graph"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@slack/web-api": "^7.0.0",
+    "@slack/socket-mode": "^2.0.0",
+    "dotenv": "^16.4.5"
+  }
+}
