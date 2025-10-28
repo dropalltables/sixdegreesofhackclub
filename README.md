@@ -2,6 +2,8 @@
 
 A Slack bot that maps channel connections in the Hack Club workspace by analyzing channel mentions. This creates a graph of how channels reference each other, perfect for building a "six degrees of separation" visualization.
 
+### Web version [here](https://github.com/dropalltables/sixdegreesofhackclub-web)
+
 ## Features
 
 - Uses Slack WebSocket (Socket Mode) for real-time connection
