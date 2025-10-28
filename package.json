@@ -1,19 +1,24 @@
 {
   "name": "sixdegreesofhackclub",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A Slack bot that maps channel connections in the Hack Club workspace",
-  "main": "index.js",
+  "main": "src/bot/index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "cli": "node cli.js"
+    "start": "node src/bot/index.js",
+    "bot": "node src/bot/index.js",
+    "cli": "node src/cli/index.js"
   },
   "bin": {
-    "sixdegrees": "./cli.js"
+    "sixdegrees": "./src/cli/index.js"
   },
-  "keywords": ["slack", "bot", "websocket", "graph"],
+  "keywords": ["slack", "bot", "websocket", "graph", "network-analysis", "cli"],
   "author": "",
   "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dropalltables/sixdegreesofhackclub"
+  },
   "dependencies": {
     "@slack/web-api": "^7.0.0",
     "@slack/socket-mode": "^2.0.0",

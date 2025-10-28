@@ -91,18 +91,34 @@ If you prefer to set up manually instead of using the manifest:
 
 ```
 sixdegreesofhackclub/
-├── index.js                    # Main bot implementation
-├── package.json                # Dependencies
-├── .env                        # Your tokens (create from .env.example)
-├── .env.example               # Example environment config
-├── slack-app-manifest.yaml    # Slack app configuration
-├── README.md                  # This file
-├── .gitignore                # Git ignore rules
+├── src/
+│   ├── bot/                   # Slack bot modules
+│   │   ├── index.js          # Main entry point
+│   │   ├── config.js         # Configuration and constants
+│   │   ├── channels.js       # Channel fetching and caching
+│   │   ├── scanner.js        # Message scanning logic
+│   │   ├── checkpoint.js     # Checkpoint management
+│   │   └── output.js         # Output file handling
+│   │
+│   └── cli/                   # CLI tool modules
+│       ├── index.js          # CLI entry point
+│       ├── graph.js          # Graph data structure
+│       ├── loader.js         # JSONL data loader
+│       └── display.js        # Display formatting
 │
-├── channels-cache.json        # Generated: cached channel list
-├── channel-links.jsonl        # Generated: output connections (JSONL format)
-├── channel-metadata.json      # Generated: metadata and channel info
-└── checkpoint.json            # Generated: resume state (deleted on completion)
+├── package.json              # Dependencies and scripts
+├── .env                      # Your tokens (create from .env.example)
+├── .env.example             # Example environment config
+├── slack-app-manifest.yaml  # Slack app configuration
+├── README.md                # This file
+├── LICENSE                  # AGPL-3.0 license
+└── .gitignore              # Git ignore rules
+
+Generated files (gitignored):
+├── channels-cache.json      # Cached channel list
+├── channel-links.jsonl      # Output connections (JSONL format)
+├── channel-metadata.json    # Metadata and channel info
+└── checkpoint.json          # Resume state (deleted on completion)
 ```
 
 ## Configuration Options
@@ -267,7 +283,7 @@ The bot automatically attempts to join public channels. For private channels, ma
 ### Rate limit errors
 If you hit rate limits frequently:
 1. Use the channel cache (don't set `CLEAR_CHANNEL_CACHE=true` unnecessarily)
-2. Increase delays in `index.js` if needed
+2. Increase delays in `src/bot/config.js` if needed (edit `DELAY_BETWEEN_MESSAGE_PAGES` and `DELAY_BETWEEN_CHANNELS`)
 
 ### Missing recent messages
 The bot scans from newest to oldest. If recent channel mentions are missing:
