@@ -144,6 +144,51 @@ class ChannelGraph {
     }
     return total;
   }
+
+  getDetailedStats() {
+    const stats = {
+      totalChannels: this.channels.size,
+      totalConnections: this.getTotalConnections(),
+      channelsByConnections: []
+    };
+
+    // Calculate connections per channel (outgoing)
+    // Skip channels where name equals ID (private/archived)
+    for (const [id, data] of this.channels.entries()) {
+      // Skip if name is the same as ID (private/archived channel)
+      if (data.name === id) {
+        continue;
+      }
+
+      stats.channelsByConnections.push({
+        id,
+        name: data.name,
+        outgoing: data.connections.length,
+        incoming: 0
+      });
+    }
+
+    // Calculate incoming connections
+    for (const channel of this.channels.values()) {
+      for (const conn of channel.connections) {
+        const target = stats.channelsByConnections.find(c => c.id === conn.to);
+        // Only count if target is not private/archived
+        if (target) {
+          target.incoming++;
+        }
+      }
+    }
+
+    // Calculate total connections (in + out)
+    for (const channel of stats.channelsByConnections) {
+      channel.total = channel.incoming + channel.outgoing;
+    }
+
+    // Sort by total connections
+    stats.channelsByConnections.sort((a, b) => b.total - a.total);
+
+    return stats;
+  }
 }
 
 // Load JSONL data
@@ -306,9 +351,44 @@ async function startCLI(graph) {
       }
 
       case 'stats': {
+        const stats = graph.getDetailedStats();
+
         console.log('\n[STATS] Graph Statistics:');
-        console.log(`  Total channels: ${graph.getTotalChannels()}`);
-        console.log(`  Total connections: ${graph.getTotalConnections()}\n`);
+        console.log(`  Total channels: ${stats.totalChannels}`);
+        console.log(`  Total connections: ${stats.totalConnections}`);
+
+        // Average connections
+        const avgConnections = (stats.totalConnections / stats.totalChannels).toFixed(2);
+        console.log(`  Average connections per channel: ${avgConnections}`);
+
+        // Most connected channels
+        console.log('\n  Most Connected Channels:');
+        for (let i = 0; i < Math.min(10, stats.channelsByConnections.length); i++) {
+          const ch = stats.channelsByConnections[i];
+          console.log(`    ${i + 1}. #${ch.name} - ${ch.total} total (${ch.outgoing} out, ${ch.incoming} in)`);
+        }
+
+        // Least connected channels
+        console.log('\n  Least Connected Channels:');
+        const leastConnected = stats.channelsByConnections.slice(-10).reverse();
+        for (let i = 0; i < leastConnected.length; i++) {
+          const ch = leastConnected[i];
+          console.log(`    ${i + 1}. #${ch.name} - ${ch.total} total (${ch.outgoing} out, ${ch.incoming} in)`);
+        }
+
+        // Isolated channels (no connections at all)
+        const isolated = stats.channelsByConnections.filter(ch => ch.total === 0);
+        if (isolated.length > 0) {
+          console.log(`\n  Isolated Channels (no connections): ${isolated.length}`);
+          for (let i = 0; i < Math.min(5, isolated.length); i++) {
+            console.log(`    - #${isolated[i].name}`);
+          }
+          if (isolated.length > 5) {
+            console.log(`    ... and ${isolated.length - 5} more`);
+          }
+        }
+
+        console.log();
         break;
       }
 
