@@ -13,7 +13,7 @@
   },
   "keywords": ["slack", "bot", "websocket", "graph"],
   "author": "",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "dependencies": {
     "@slack/web-api": "^7.0.0",
     "@slack/socket-mode": "^2.0.0",
