@@ -307,4 +307,6 @@ Use the `channel-links.jsonl` file to build a web UI that:
 
 ## License
 
-MIT
+AGPL-3.0
+
+**License Change:** This project was previously under MIT license up to commit `d045308` (2025-10-28). As of October 28, 2025, all new contributions are under AGPL-3.0. The project as a whole is now AGPL-3.0.
