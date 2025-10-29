@@ -6,3 +6,8 @@ checkpoint.json
 channels-cache.json
 *.log
 .DS_Store
+
+# SQLite databases
+*.db
+*.db-shm
+*.db-wal

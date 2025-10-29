@@ -22,7 +22,7 @@ export async function appendConnections(connections) {
 /**
  * Generate metadata file
  */
-export async function generateMetadata(channels, startTime, outputFile) {
+export async function generateMetadata(channels, startTime, outputFile, channelMessageCounts = new Map()) {
   const metadata = {
     workspace: 'Hack Club',
     generatedAt: new Date().toISOString(),
@@ -36,7 +36,8 @@ export async function generateMetadata(channels, startTime, outputFile) {
   channels.forEach(channel => {
     metadata.channels[channel.id] = {
       id: channel.id,
-      name: channel.name
+      name: channel.name,
+      messageCount: channelMessageCounts.get(channel.id) || 0
     };
   });
 

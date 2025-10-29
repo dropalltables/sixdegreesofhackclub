@@ -12,7 +12,14 @@
   "bin": {
     "sixdegrees": "./src/cli/index.js"
   },
-  "keywords": ["slack", "bot", "websocket", "graph", "network-analysis", "cli"],
+  "keywords": [
+    "slack",
+    "bot",
+    "websocket",
+    "graph",
+    "network-analysis",
+    "cli"
+  ],
   "author": "",
   "license": "AGPL-3.0",
   "repository": {
@@ -20,8 +27,9 @@
     "url": "https://github.com/dropalltables/sixdegreesofhackclub"
   },
   "dependencies": {
-    "@slack/web-api": "^7.0.0",
     "@slack/socket-mode": "^2.0.0",
+    "@slack/web-api": "^7.0.0",
+    "better-sqlite3": "^12.4.1",
     "dotenv": "^16.4.5"
   }
 }

@@ -45,11 +45,15 @@ async function mapChannelConnections() {
     console.log(`[INFO] Resuming from channel index ${startIndex}`);
   }
 
+  // Track message counts per channel
+  const channelMessageCounts = new Map();
+
   for (let i = startIndex; i < channels.length; i++) {
     const channel = channels[i];
     console.log(`[${i + 1}/${channels.length}]`);
 
-    await scanChannelMessages(webClient, channel.id, channel.name, i, channelNames);
+    const messageCount = await scanChannelMessages(webClient, channel.id, channel.name, i, channelNames);
+    channelMessageCounts.set(channel.id, messageCount);
 
     // Save checkpoint after each channel
     await saveCheckpoint(i, channel.id, 0);
@@ -65,7 +69,7 @@ async function mapChannelConnections() {
     console.log('=' .repeat(60));
     console.log('[INFO] Generating metadata file');
 
-    const metadata = await generateMetadata(channels, startTime, OUTPUT_FILE);
+    const metadata = await generateMetadata(channels, startTime, OUTPUT_FILE, channelMessageCounts);
     await writeMetadata(metadata, METADATA_FILE);
 
     console.log('[SUCCESS] Output saved to ' + OUTPUT_FILE);

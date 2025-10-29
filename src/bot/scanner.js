@@ -84,7 +84,9 @@ export async function scanChannelMessages(webClient, channelId, channelName, cha
                   toName: channelNames.get(mentionedChannelId) || mentionedChannelId,
                   messageTs: message.ts,
                   messageDate: messageDate,
-                  messageLink: messageLink
+                  messageLink: messageLink,
+                  authorUserId: message.user || null,
+                  messageText: message.text ? message.text.substring(0, 200) : null
                 };
 
                 pendingWrites.push(connection);
@@ -160,6 +162,8 @@ export async function scanChannelMessages(webClient, channelId, channelName, cha
     }
 
     console.log(`[COMPLETE] Scanned ${messageCount.toLocaleString()} messages, found ${totalLinksFound} unique channel links`);
+
+    return messageCount;
   } catch (error) {
     if (error.data?.error === 'not_in_channel') {
       console.log(`[WARN] Bot not in channel, attempting to join...`);
@@ -173,5 +177,6 @@ export async function scanChannelMessages(webClient, channelId, channelName, cha
     } else {
       console.error(`[ERROR] Failed to scan channel:`, error.data?.error || error.message);
     }
+    return 0;
   }
 }
