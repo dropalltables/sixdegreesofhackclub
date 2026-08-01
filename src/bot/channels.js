@@ -2,7 +2,11 @@ import fs from 'fs/promises';
 import { CHANNELS_CACHE_FILE, CLEAR_CHANNEL_CACHE } from './config.js';
 
 /**
- * Fetch all channels in the workspace
+ * Fetch all channels in the workspace, including archived ones.
+ *
+ * Archived channels are still referenced by messages in active channels, so
+ * they're needed to resolve mention targets to names. They are not scanned -
+ * the caller filters them out of the scan list.
  */
 export async function getAllChannels(webClient) {
   // Clear cache if flag is set
@@ -37,7 +41,7 @@ export async function getAllChannels(webClient) {
     do {
       const result = await webClient.conversations.list({
         types: 'public_channel,private_channel',
-        exclude_archived: true,
+        exclude_archived: false,
         limit: 1000,
         cursor: cursor
       });
@@ -48,7 +52,8 @@ export async function getAllChannels(webClient) {
       console.log(`[INFO] Found ${allChannels.length} channels`);
     } while (cursor);
 
-    console.log(`[SUCCESS] Total channels found: ${allChannels.length}\n`);
+    const archivedCount = allChannels.filter(c => c.is_archived).length;
+    console.log(`[SUCCESS] Total channels found: ${allChannels.length} (${archivedCount} archived, kept for name resolution)\n`);
 
     // Cache the results
     const cache = {

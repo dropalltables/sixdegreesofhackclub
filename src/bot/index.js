@@ -12,6 +12,7 @@ import { loadCheckpoint, saveCheckpoint, clearCheckpoint } from './checkpoint.js
 import { getAllChannels, buildChannelNameMap } from './channels.js';
 import { scanChannelMessages } from './scanner.js';
 import { generateMetadata, writeMetadata } from './output.js';
+import { resolveWorkspace } from './workspace.js';
 
 const webClient = new WebClient(SLACK_BOT_TOKEN);
 const socketModeClient = new SocketModeClient({
@@ -27,14 +28,22 @@ async function mapChannelConnections() {
 
   const startTime = Date.now();
 
+  // Identify the workspace before anything builds a message link
+  await resolveWorkspace(webClient);
+
   // Load checkpoint to resume if needed
   const checkpoint = await loadCheckpoint();
 
-  // Step 1: Get all channels
-  const channels = await getAllChannels(webClient);
+  // Step 1: Get all channels, archived included
+  const allChannels = await getAllChannels(webClient);
 
-  // Build channel name mapping
-  const channelNames = buildChannelNameMap(channels);
+  // Name map covers archived channels too, so mentions of them resolve to a
+  // name instead of a bare channel ID
+  const channelNames = buildChannelNameMap(allChannels);
+
+  // Archived channels can't be joined or scanned, so they're not scan targets
+  const channels = allChannels.filter(channel => !channel.is_archived);
+  console.log(`[INFO] Scanning ${channels.length} active channels`);
 
   console.log('=' .repeat(60));
   console.log('[INFO] Starting message scan\n');
@@ -69,13 +78,15 @@ async function mapChannelConnections() {
     console.log('=' .repeat(60));
     console.log('[INFO] Generating metadata file');
 
-    const metadata = await generateMetadata(channels, startTime, OUTPUT_FILE, channelMessageCounts);
+    // Pass every channel, archived included, so the CLI can resolve their names
+    const metadata = await generateMetadata(allChannels, startTime, OUTPUT_FILE, channelMessageCounts);
     await writeMetadata(metadata, METADATA_FILE);
 
     console.log('[SUCCESS] Output saved to ' + OUTPUT_FILE);
     console.log('[SUCCESS] Metadata saved to ' + METADATA_FILE);
     console.log('\n[STATS] Summary:');
-    console.log(`  Total channels: ${channels.length}`);
+    console.log(`  Channels scanned: ${channels.length}`);
+    console.log(`  Channels known (incl. archived): ${allChannels.length}`);
     console.log(`  Processing time: ${metadata.processingTimeSeconds}s`);
     console.log('\n[DONE] Mapping complete\n');
     console.log('[INFO] Cleaning up checkpoint file...');

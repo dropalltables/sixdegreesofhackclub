@@ -7,6 +7,7 @@ import {
 } from './config.js';
 import { saveCheckpoint } from './checkpoint.js';
 import { appendConnections } from './output.js';
+import { getMessageLink } from './workspace.js';
 
 /**
  * Scan messages in a channel for channel mentions
@@ -75,7 +76,7 @@ export async function scanChannelMessages(webClient, channelId, channelName, cha
               if (!seenLinks.has(mentionedChannelId)) {
                 seenLinks.add(mentionedChannelId);
 
-                const messageLink = `https://hackclub.slack.com/archives/${channelId}/p${message.ts.replace('.', '')}`;
+                const messageLink = getMessageLink(channelId, message.ts);
                 const messageDate = new Date(parseFloat(message.ts) * 1000).toISOString();
                 const connection = {
                   from: channelId,
@@ -152,7 +153,7 @@ export async function scanChannelMessages(webClient, channelId, channelName, cha
         const messagePreview = oldestMessageText.substring(0, 100).replace(/\n/g, ' ');
         console.log(`[DEBUG] Oldest message found: ${oldestDate}`);
         console.log(`[DEBUG] Message preview: "${messagePreview}${oldestMessageText.length > 100 ? '...' : ''}"`);
-        console.log(`[DEBUG] Message link: https://hackclub.slack.com/archives/${channelId}/p${oldestMessageTs.replace('.', '')}`);
+        console.log(`[DEBUG] Message link: ${getMessageLink(channelId, oldestMessageTs)}`);
       }
     }
 

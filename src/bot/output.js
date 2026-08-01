@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import { OUTPUT_FILE, DEBUG } from './config.js';
+import { getWorkspaceName } from './workspace.js';
 
 /**
  * Append connections to output file in batches
@@ -24,9 +25,11 @@ export async function appendConnections(connections) {
  */
 export async function generateMetadata(channels, startTime, outputFile, channelMessageCounts = new Map()) {
   const metadata = {
-    workspace: 'Hack Club',
+    workspace: getWorkspaceName(),
     generatedAt: new Date().toISOString(),
     totalChannels: channels.length,
+    // Archived channels are listed for name resolution but never scanned
+    scannedChannels: channels.filter(channel => !channel.is_archived).length,
     processingTimeSeconds: ((Date.now() - startTime) / 1000).toFixed(2),
     outputFile: outputFile,
     channels: {}
@@ -37,6 +40,7 @@ export async function generateMetadata(channels, startTime, outputFile, channelM
     metadata.channels[channel.id] = {
       id: channel.id,
       name: channel.name,
+      isArchived: !!channel.is_archived,
       messageCount: channelMessageCounts.get(channel.id) || 0
     };
   });

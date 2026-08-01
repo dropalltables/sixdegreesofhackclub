@@ -19,7 +19,7 @@ A Slack bot that maps channel connections in the Hack Club workspace by analyzin
 
 ## Prerequisites
 
-1. A Slack workspace (Hack Club in this case)
+1. A Slack workspace (Hack Club in this case). Standalone or Enterprise Grid both work - see [Enterprise Grid workspaces](#enterprise-grid-workspaces)
 2. Admin access to create a Slack app
 3. Node.js installed (v18 or higher recommended)
 
@@ -30,7 +30,7 @@ A Slack bot that maps channel connections in the Hack Club workspace by analyzin
 1. Go to [api.slack.com/apps](https://api.slack.com/apps)
 2. Click **"Create New App"**
 3. Select **"From an app manifest"**
-4. Choose your **Hack Club workspace**
+4. Choose the workspace you want to map (on Enterprise Grid, pick the individual workspace, not the org)
 5. Select **YAML** tab
 6. Copy and paste the contents of `slack-app-manifest.yaml` from this project
 7. Click **"Next"** → Review the configuration → Click **"Create"**
@@ -73,6 +73,20 @@ A Slack bot that maps channel connections in the Hack Club workspace by analyzin
 npm install
 npm start
 ```
+
+## Enterprise Grid Workspaces
+
+The bot runs against a **single workspace**, including one that belongs to an Enterprise Grid org. No extra configuration is needed:
+
+- The manifest ships with `org_deploy_enabled: false`, which is the setting for a per-workspace install. Leave it alone.
+- When installing, select the individual workspace rather than installing the app org-wide.
+- Message links are built from the workspace URL returned by `auth.test`, so Grid workspaces correctly get `https://<workspace>.enterprise.slack.com/archives/...` instead of a `.slack.com` link. Set `SLACK_WORKSPACE_URL` in `.env` only if you need to override it.
+
+The bot prints the workspace name, team ID, and link base at startup - check those match the workspace you meant to scan.
+
+If the token came from an **org-wide** install, the bot warns at startup. That install scopes the token to every workspace at once, which changes how channel listing behaves. Reinstall to a single workspace.
+
+Channels shared into the workspace from elsewhere in the org may not be joinable. Those are logged and skipped, and the scan continues.
 
 ## Manual Setup (Alternative)
 
@@ -135,6 +149,7 @@ Generated files (gitignored):
 - `SLACK_APP_TOKEN` - Your app-level token for Socket Mode (required)
 - `DEBUG` - Set to `true` for verbose output and no file writes (default: `false`)
 - `CLEAR_CHANNEL_CACHE` - Set to `true` to refresh channel cache (default: `false`)
+- `SLACK_WORKSPACE_URL` - Optional override for the base URL in message links (default: detected via `auth.test`)
 
 ### Debug Mode (`DEBUG=true`)
 

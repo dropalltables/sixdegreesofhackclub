@@ -7,6 +7,9 @@ export const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 export const SLACK_APP_TOKEN = process.env.SLACK_APP_TOKEN;
 export const DEBUG = process.env.DEBUG === 'true';
 export const CLEAR_CHANNEL_CACHE = process.env.CLEAR_CHANNEL_CACHE === 'true';
+// Optional: override the base URL used for message links (e.g. https://acme.enterprise.slack.com).
+// Left empty, it's read from auth.test at startup.
+export const SLACK_WORKSPACE_URL = process.env.SLACK_WORKSPACE_URL;
 
 // File paths
 export const OUTPUT_FILE = 'channel-links.jsonl';
